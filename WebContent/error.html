@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>出错了</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>	
+    <style>
+    	body{ font-size:18px;  font-family:"Microsoft YaHei","微软雅黑","Arial Narrow"; background:#f2f2f2;    text-shadow: silver 1px 1px 2px !important;}
+    </style>
+  </head>
+  
+  <body>
+    <div style="text-align:center;margin-top:20px;font-size:24px;">抱歉，您访问的链接产生了错误！</div>
+    <div style="margin-top:30px;text-align:center;">
+    	<span style="font-weight:bold">错误原因是：</span><label id="cwyy" style="width: 100%;height: auto;word-wrap:break-word;word-break:break-all; overflow: hidden;"></label>
+    </div>
+    <div style="margin-top:30px;text-align:center;">
+    	您可以：根据错误原因修改后重试，或扫描下方二维码加入官方QQ群，将问题反馈给我们，非常感谢！
+    </div>
+    <div style="margin-top:30px;text-align:center;">您也可以：
+    	<a href="javascript:" onclick="location.href=history.go(-1)" style="font-size:13px"> 点击放返回上一页</a>&emsp;
+    	<a href="/alitjp" style="font-size:13px"> 点击返回首页</a>
+    </div>
+    <div style="margin-top:30px;text-align:center;">
+    	<img src="/alitjp/images/tjpcms/qun.png" alt="tjpcms群号：168895774" style="border:1px solid #ccc;border-radius:5px;max-width:100%"/>
+        	<br/>QQ群号：168895774
+    </div>
+    
+    <script>
+    	document.getElementById("cwyy").innerHTML=decodeURIComponent(decodeURIComponent(window.location.search.substring(3))).replace(/~~~/g,"  ")
+    </script>
+  </body>
+</html>

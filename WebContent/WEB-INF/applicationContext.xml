@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans default-lazy-init="true"
+xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="  
+    http://www.springframework.org/schema/beans   
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  
+    http://www.springframework.org/schema/tx   
+    http://www.springframework.org/schema/tx/spring-tx-3.0.xsd   
+    http://www.springframework.org/schema/context   
+    http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<!-- 引入jdbc配置文件 -->
+	<bean class="com.tjpcms.security.JiamiDbpwd">
+		<property name="locations">  
+			<list>  
+				<value>/WEB-INF/jdbc.properties</value>
+				<value>/WEB-INF/jdbc_1.properties</value><!-- 多数据源配置 -->
+			 </list>  
+		</property>
+		<property name="secutiry" value="false"/><!-- 设置为true后，很多网友问我怎么改密码，我还是先不加密了吧 -->
+	</bean>
+
+	<!--创建jdbc数据源 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="initialSize" value="10"/>
+		<property name="maxActive" value="80"/><!-- maxIdle值与maxActive值应配置的接近 -->
+		<property name="maxIdle" value="60"/>
+		<property name="minIdle" value="10"/><!-- minIdle要与timeBetweenEvictionRunsMillis配合使用才有用,单独使用minIdle不会起作用http://elf8848.iteye.com/blog/1931778 -->
+		<property name="removeAbandoned" value="true"/>
+        <property name="logAbandoned" value="true"/>
+        <property name="removeAbandonedTimeout" value="180"/><!-- 连接泄漏回收参数，默认300秒，调整为180秒，泄露的连接可以被删除的超时值 -->
+        <property name="timeBetweenEvictionRunsMillis" value="600000"/><!-- 每10分钟运行一次空闲连接回收器 -->
+        <property name="minEvictableIdleTimeMillis" value="1800000"/><!-- 池中的连接空闲30分钟(默认的)后被回收  -->
+        <property name="numTestsPerEvictionRun" value="40"/><!-- 可以和maxActive保持一致，一次检测所有连接 -->
+        <property name="testOnBorrow" value="false"/><!-- false表示每次从连接池中取出连接时，不需要执行validationQuery = "SELECT 1" 中的SQL进行测试。若配置为true,对性能有非常大的影响，性能会下降7-10倍 -->
+        <property name="testOnReturn" value="false" /><!-- 借出连接时不要测试，否则很影响性能 。一定要配置，因为它的默认值是true-->
+        <property name="testWhileIdle" value="true"/><!-- 指明连接是否被空闲连接回收器(如果有)进行检验.如果检测失败,则连接将被从池中去除 -->
+        <property name="validationQuery" value="select 1 "/><!-- 验证连接是否可用，使用的SQL语句 -->
+	</bean>
+	
+	<!-- 创建SqlSessionFactory，同时指定数据源 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="/WEB-INF/mybatis-config.xml" />
+		<property name="typeAliasesPackage" value="com.tjpcms.spring.model" />
+		<property name="mapperLocations">
+			<list>
+				<value>classpath:com/tjpcms/spring/mapper/*Mapper.xml</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- 可通过注解控制事务 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<!-- Mapper接口所在包名，Spring会自动查找其下的Mapper -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.tjpcms.spring.mapper" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>  
+	</bean>
+	
+	<bean id="multipartResolver"      class="org.springframework.web.multipart.commons.CommonsMultipartResolver">    
+	        <property name="maxUploadSize" value="1000000000" /> 
+	        <!-- 设置一个超大的，这样就不抛出异常（BUG，接不了这个异常），再用拦截器手动判断是文件上传就(在context-dispatcher.xml) -->   
+    </bean>  
+
+    
+    <!-- 多数据源配置，如果你需要多数据源，就把下面的几个配置项按照你的实际目录改改，换成你自己的就行了 -->
+	<bean id="dataSource_1" destroy-method="close"	class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${jdbc_1.driverClassName}" />
+		<property name="url" value="${jdbc_1.url}" />
+		<property name="username" value="${jdbc_1.username}" />
+		<property name="password" value="${jdbc_1.password}" />
+	</bean>
+	<bean id="sqlSessionFactory_1" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource_1" />
+		<property name="configLocation" value="/WEB-INF/mybatis-config.xml" /><!-- 换成你自己的 -->
+		<property name="typeAliasesPackage" value="com.ceshishujuyuan" /><!-- 换成你自己的 -->
+		<property name="mapperLocations">
+			<list>
+				<value>classpath:com/ceshishujuyuan/mapper/*Mapper.xml</value>
+			</list>
+		</property>
+	</bean>
+		<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.ceshishujuyuan.mapper" /><!-- 换成你自己的 -->
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory_1"/>  
+	</bean>
+    <bean id="transactionManager_1" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource_1" />
+	</bean>
+	<tx:annotation-driven transaction-manager="transactionManager_1" />
+    
+
+    
+    
+    
+    
+</beans>  

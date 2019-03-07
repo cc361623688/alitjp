@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<!-- 这个文件是为了帮你弄好多数据源配置的，如果你需要多数据源，就自己稍微改一下就能用了 -->
+<mapper namespace="com.ceshishujuyuan.mapper.testMapper">
+	<select id="r" resultType="map" parameterType="java.lang.String" >
+		${sql}
+	</select>
+</mapper>

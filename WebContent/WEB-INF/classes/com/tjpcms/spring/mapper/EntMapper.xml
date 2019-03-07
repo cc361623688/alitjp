@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tjpcms.spring.mapper.EntMapper">
+  
+	<select id="getLmTree" resultType="map">
+		select t.id,t.pId,t.nav,s.zdxpy lxpy,'true' open,t.donly2,t.donly3,t.url lj,t.lx lxdzw,t.name jdmc,
+		<if test="showid==1"> CONCAT(t.name,' (',CAST(t.id AS CHAR),')') name </if>
+		<if test="showid!=1"> t.name </if>
+		from tjpcms_lanmu t left join tjpcms_zdx s on t.lx=s.zdxmc left join tjpcms_zdb d on s.pId=d.id
+		where d.py='lanmuleixing'
+		order by t.px,t.gx desc
+	</select>
+
+	<select id="getTblZiduan" resultType="java.util.Map">
+		SELECT COLUMN_NAME,extra,data_type,CHARACTER_MAXIMUM_LENGTH,COLUMN_KEY
+			FROM information_schema.COLUMNS where TABLE_SCHEMA=#{1} and TABLE_NAME=#{0}
+	</select>
+	
+	<select id="getLmList" resultType="map">
+		SELECT t.*,(select count(*) from tjpcms_lanmu s where s.pId=t.id)cnt,s.zdxmc,s.zdxpy lxpy,s.sys,c.mc lcmc
+		from tjpcms_lanmu t
+		left join tjpcms_zdx s on t.lx=s.zdxmc 
+		left join tjpcms_zdb d on s.pId=d.id
+		left join tjpcms_liucheng c on t.lcid=c.id
+		where t.pId=#{0} and d.py='lanmuleixing'
+		order by t.px,t.id limit #{1},#{2}
+	</select>
+	
+	<select id="cntLmList" resultType="int">
+		SELECT count(*) from tjpcms_lanmu where pId=#{0}
+	</select>
+
+
+	<insert id="ins"  parameterType="map" useGeneratedKeys="true"  keyProperty="id"><!-- 这个可以返回插入的id -->
+		${sql}
+	</insert>
+	<insert id="add"  parameterType="java.lang.String">
+		${sql}
+	</insert>
+	<delete id="del"  parameterType="java.lang.String">
+		${sql}
+	</delete>
+	<update id="upd"  parameterType="java.lang.String">
+		${sql}
+	</update>
+	<select id="r" resultType="map" parameterType="java.lang.String" >
+		${sql}
+	</select>
+	<select id="ro" resultType="map" parameterType="java.lang.String" >
+		${sql}
+	</select>
+	<select id="cnt" resultType="int" parameterType="java.lang.String">
+		${sql}
+	</select>
+	<select id="vpx" resultType="int" parameterType="java.lang.String">
+		${sql}
+	</select>
+	<select id="obj" resultType="map" parameterType="java.lang.String">
+		${sql}
+	</select>
+
+	<select id="getzlmlist" resultType="java.util.Map" parameterType="Object">
+		SELECT * from tjpcms_lanmu  where pID=#{0} and nav='显示'     order by px ,gx desc
+	</select>
+
+	<!-- 获取菜单树 -->
+	<select id="getCdTree" resultType="map">
+		select t.id,t.pId,'true' open,CONCAT(t.name,' (',CAST(t.id AS CHAR),')') name,t.dt,
+			case when exists(select id from tjpcms_qx_caidan s where s.jsid=#{jsid} and s.cdid=t.id) then 'true' else 'false' end checked
+			from tjpcms_caidan t
+			where 1=1
+			<if test=" chadt!=null and chadt!='' "> and dt!=1 </if>
+			order by t.pId,t.px,t.gx desc
+	</select>
+
+	<select id="getCdList" resultType="map">
+		SELECT t.*,
+		(select count(*) from tjpcms_caidan s where s.pId=t.id)cnt,<!-- 直接子菜单数 -->
+		case when t.dt=1  then 
+			(select count(*) from tjpcms_qx_caidan s where s.cdid=concat('-',#{0},'-',t.id,'-', #{3}) and exists (select * from tjpcms_juese xx where xx.id=s.jsid))
+		else 
+			(select count(*) from tjpcms_qx_caidan s where s.cdid=t.id and exists (select * from tjpcms_juese xx where xx.id=s.jsid)) 
+		end cdjss,<!-- 菜单角色数，拥有这个菜单的角色数 -->
+		case when  t.dt=1 then 
+			(select count(*) from tjpcms_usr s where s.jsid in (select jsid from tjpcms_qx_caidan s where s.cdid=concat('-',#{0},'-',t.id,'-', #{3})))
+		else
+			(select count(*) from tjpcms_usr s where s.jsid in (select jsid from tjpcms_qx_caidan s where s.cdid=t.id))
+		end cdyhs<!-- 菜单用户数，拥有这个菜单的用户数 -->
+		from tjpcms_caidan t 
+		where t.pId=#{0}
+		order by t.px,t.id limit #{1},#{2}
+	</select>
+
+	<select id="cntCdList" resultType="int">
+		SELECT count(*) from tjpcms_caidan where pId=#{0}
+	</select>
+	
+	
+</mapper>
